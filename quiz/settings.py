@@ -21,7 +21,6 @@ INSTALLED_APPS = [
     'question',
     'user',
     'rest_framework',
-    'drf_yasg',
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -113,9 +112,3 @@ SESSION_COOKIE_HTTPONLY= True
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
-# SWAGGER_SETTINGS = {
-#     ...
-#     'VALIDATOR_URL': 'http://localhost:8189',
-#     ...
-# }
-# AUTH_USE_MODEL = 'user.User'

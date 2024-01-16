@@ -6,18 +6,17 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
-from rest_framework.generics import GenericAPIView
 
 from django.contrib.auth import authenticate, login, logout
 
-class QuestionAPIView(GenericAPIView):
+class QuestionAPIView(APIView):
     # permission_classes = [IsAuthenticated]
     def get(self, request, question_id):
         raw_questions = Question.objects.order_by('?').filter(pk=question_id)[:10]
         serializer = QuestionSerializer(raw_questions, many=True)
         return Response(serializer.data , status=status.HTTP_200_OK)
 
-class UserScoreList(GenericAPIView):
+class UserScoreList(APIView):
     def post(self, request, question_id):
         try:
             question = Question.objects.get(pk=question_id)
@@ -38,7 +37,7 @@ class UserScoreList(GenericAPIView):
         except Question.DoesNotExist:
             return Response({"error": "Question not found"}, status=status.HTTP_404_NOT_FOUND)
   
-class Leaderboard(GenericAPIView):
+class Leaderboard(APIView):
     def get(self, request):
         top_users = UserScore.objects.order_by('-score')[:10]
         serializer = UserScoreSerializer(top_users, many=True)

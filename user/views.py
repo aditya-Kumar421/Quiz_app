@@ -4,13 +4,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.generics import GenericAPIView
 
 from knox.auth import AuthToken
 
 from .serializers import UserSerializer
 
-class LoginUserView(GenericAPIView):
+
+
+class LoginUserView(APIView):
     def post(self, request):
             serializer = AuthTokenSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -19,7 +20,7 @@ class LoginUserView(GenericAPIView):
             return Response({'user_info':{'username':user.username, 
                                           'email':user.email}, 'token': token})
 
-class UserProfileView(GenericAPIView):
+class UserProfileView(APIView):
       def get(self, request):
             user = request.user
 
@@ -31,7 +32,7 @@ class UserProfileView(GenericAPIView):
                   })
             return Response({'error':'not authenticated'}, status=400)
       
-class RegisterUserView(GenericAPIView):
+class RegisterUserView(APIView):
     def post(self, request):
             serializer = UserSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
