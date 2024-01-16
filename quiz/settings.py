@@ -1,11 +1,11 @@
 from pathlib import Path
+from decouple import config, Csv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-pc(laeg@c%1gq%ml*)73hc#@hce*_90@%si3z^-e#_yd^c7ob6'
-
-DEBUG = True
+SECRET_KEY = config('SECRET_KEY')
+DEBUG = config('DEBUG',cast=bool)
 
 ALLOWED_HOSTS = ["*"]
 
@@ -106,7 +106,7 @@ CSRF_COOKIE_SAMESITE = 'strict'
 SESSION_COOKIE_SAMESITE = 'strict'
 
 #For production set below both lines to True
-CSRF_COOKIE_HTTPONLY= False
+CSRF_COOKIE_HTTPONLY= True
 SESSION_COOKIE_HTTPONLY= True
 
 AUTHENTICATION_BACKENDS = [
