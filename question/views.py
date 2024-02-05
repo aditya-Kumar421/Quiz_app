@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.authtoken.models import Token
 
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 
 
 class QuestionGETView(APIView):
@@ -61,6 +62,7 @@ class QuestionPOSTView(APIView):
 
 
 class UserScoreList(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request, question_id):
         try:
             question = Question.objects.get(pk=question_id)
@@ -72,9 +74,7 @@ class UserScoreList(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Update the user's score based on the provided score
-            user = request.user  # Assuming the user is authenticated
-            user_score_instance, created = UserScore.objects.get_or_create(user=user)
+            user_score_instance, created = UserScore.objects.get_or_create(user=request.user)
 
             user_score_instance.score += user_score
             user_score_instance.save()
@@ -90,6 +90,7 @@ class UserScoreList(APIView):
 
 
 class Leaderboard(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         top_users = UserScore.objects.order_by("-score")[:10]
         serializer = UserScoreSerializer(top_users, many=True)
