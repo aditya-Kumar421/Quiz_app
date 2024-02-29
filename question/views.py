@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 
 
 class QuestionGETView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request, id):
         try:
             raw_questions = Question.objects.order_by("?").filter(pk=id)[:10]
@@ -46,7 +46,7 @@ class QuestionUpdateDeleteView(APIView):
 
 
 class QuestionPOSTView(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
 
     def post(self, request):
         serializer = QuestionSerializer(data=request.data)
