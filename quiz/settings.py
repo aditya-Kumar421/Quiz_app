@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'user',
     'rest_framework',
 ]
+#For frontend we use allowed origins
 CORS_ALLOW_ALL_ORIGINS = True
 
 MIDDLEWARE = [
@@ -34,7 +35,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-#For frontend we use allowed origins
+
 ROOT_URLCONF = 'quiz.urls'
 
 TEMPLATES = [
@@ -84,6 +85,9 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'knox.auth.TokenAuthentication',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
     ],
 }
 

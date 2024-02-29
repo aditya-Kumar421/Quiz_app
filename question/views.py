@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 
 
 class QuestionGETView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request, id):
         try:
             raw_questions = Question.objects.order_by("?").filter(pk=id)[:10]
@@ -21,8 +21,10 @@ class QuestionGETView(APIView):
         serializer = QuestionSerializer(raw_questions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class QuestionUpdateDeleteView(APIView):
     permission_classes = [IsAdminUser]
+
     def put(self, request, pk):
         try:
             qus = Question.objects.get(pk=pk)
@@ -44,7 +46,7 @@ class QuestionUpdateDeleteView(APIView):
 
 
 class QuestionPOSTView(APIView):
-    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]
 
     def post(self, request):
         serializer = QuestionSerializer(data=request.data)
@@ -63,6 +65,7 @@ class QuestionPOSTView(APIView):
 
 class UserScoreList(APIView):
     permission_classes = [IsAuthenticated]
+
     def post(self, request, question_id):
         try:
             question = Question.objects.get(pk=question_id)
@@ -74,7 +77,9 @@ class UserScoreList(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            user_score_instance, created = UserScore.objects.get_or_create(user=request.user)
+            user_score_instance, created = UserScore.objects.get_or_create(
+                user=request.user
+            )
 
             user_score_instance.score += user_score
             user_score_instance.save()
@@ -91,6 +96,7 @@ class UserScoreList(APIView):
 
 class Leaderboard(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         top_users = UserScore.objects.order_by("-score")[:10]
         serializer = UserScoreSerializer(top_users, many=True)

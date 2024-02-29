@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
         
 class Question(models.Model):
     # course = models.ForeignKey(Course, on_delete = models.CASCADE)
-    question = models.CharField(max_length = 255)
+    question = models.CharField(max_length = 255, unique = True)
     image_url = models.URLField(blank=True)
     answer = models.CharField(max_length = 100)
     option_one = models.CharField(max_length = 100,blank=True)
