@@ -23,14 +23,13 @@ class LoginUserView(APIView):
 class UserProfileView(APIView):
       def get(self, request):
             user = request.user
-
             if user.is_authenticated:
                   return Response({
                         'user_info':{'username':user.username, 
                                     'email':user.email
                               },
                   })
-            return Response({'error':'not authenticated'}, status=400)
+            return Response({'error':'Not authenticated'}, status=400)
       
 class RegisterUserView(APIView):
     def post(self, request):
