@@ -17,10 +17,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'rest_framework',
     'knox',
     'question',
     'user',
-    'rest_framework',
 ]
 #For frontend we use allowed origins
 CORS_ALLOW_ALL_ORIGINS = True
@@ -92,26 +92,21 @@ REST_FRAMEWORK = {
 }
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
-
-
 STATIC_URL = 'static/'
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #security setting
-
 CSRF_COOKIE_SAMESITE = 'strict'
 SESSION_COOKIE_SAMESITE = 'strict'
 
 #For production set below both lines to True
 CSRF_COOKIE_HTTPONLY= True
 SESSION_COOKIE_HTTPONLY= True
+SESSION_COOKIE_SECURE = True
+
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',

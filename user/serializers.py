@@ -29,6 +29,10 @@ class UserSerializer(serializers.ModelSerializer):
                                 ]
                             }
                     }
+    def validate_username(self, value):
+        if ";" in value or "--" in value:
+            raise serializers.ValidationError("Invalid username")
+        return value
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
