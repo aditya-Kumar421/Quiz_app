@@ -1,18 +1,18 @@
-from .serializers import *
-from .models import *
-
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.authtoken.models import Token
 
+from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
+from .serializers import *
+from .models import *
 
 class QuestionGETView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request, id):
         try:
             raw_questions = Question.objects.order_by("?").filter(pk=id)[:10]
@@ -21,9 +21,8 @@ class QuestionGETView(APIView):
         serializer = QuestionSerializer(raw_questions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
 class QuestionUpdateDeleteView(APIView):
-    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]
 
     def put(self, request, pk):
         try:
@@ -44,9 +43,8 @@ class QuestionUpdateDeleteView(APIView):
         qus.delete()
         return Response({"Question deleted successfully!"})
 
-
 class QuestionPOSTView(APIView):
-    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]
 
     def post(self, request):
         serializer = QuestionSerializer(data=request.data)
@@ -62,15 +60,11 @@ class QuestionPOSTView(APIView):
         serializer = QuestionSerializer(all_Questions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
 class UserScoreList(APIView):
     permission_classes = [IsAuthenticated]
-
-    def post(self, request, question_id):
+    def post(self, request):
         try:
-            question = Question.objects.get(pk=question_id)
             user_score = request.data.get("score")
-
             if user_score not in [0, 5]:
                 return Response(
                     {"error": "Invalid score. Score must be either 0 or 5."},
@@ -92,12 +86,22 @@ class UserScoreList(APIView):
             return Response(
                 {"error": "Question not found"}, status=status.HTTP_404_NOT_FOUND
             )
+    def get(self, request):
+        try:
+            user_scores = UserScore.objects.filter(user=request.user)
+            total_score = sum(score.score for score in user_scores)
+            
+            return Response({"username": request.user.username, "email": request.user.email,"total_score": total_score}, status=status.HTTP_200_OK)
 
+        except UserScore.DoesNotExist:
+            return Response(
+                {"error": "No scores found for the user"}, status=status.HTTP_404_NOT_FOUND
+            )
 
 class Leaderboard(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         top_users = UserScore.objects.order_by("-score")[:10]
-        serializer = UserScoreSerializer(top_users, many=True)
+        serializer = LeaderboardSerializer(top_users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

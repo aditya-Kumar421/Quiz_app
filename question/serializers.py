@@ -12,11 +12,14 @@ class QuestionSerializer(serializers.ModelSerializer):
         return [obj.option_one, obj.option_two, obj.option_three, obj.option_four]
 
 
-
-#Score 
-
 class UserScoreSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
     class Meta:
         model = UserScore
         fields = ('user', 'score')
+
+class LeaderboardSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+
+    class Meta:
+        model = UserScore
+        fields = ['username', 'score']

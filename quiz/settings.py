@@ -113,6 +113,13 @@ SESSION_COOKIE_SAMESITE = 'strict'
 CSRF_COOKIE_HTTPONLY= True
 SESSION_COOKIE_HTTPONLY= True
 
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-]
+# AUTHENTICATION_BACKENDS = [
+#     'django.contrib.auth.backends.ModelBackend',
+# ]
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'cloudcomputingcell2@gmail.com'
+EMAIL_HOST_PASSWORD = 'qojn iuaa lrqb zdtm'
+
