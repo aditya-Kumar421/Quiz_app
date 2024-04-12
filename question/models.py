@@ -4,13 +4,13 @@ from django.contrib.auth.models import User
 
         
 class Question(models.Model):
-    question = models.CharField(max_length = 255, unique = True)
+    question = models.CharField(max_length = 500, unique = True)
     image_url = models.URLField(blank=True)
-    answer = models.CharField(max_length = 100)
-    option_one = models.CharField(max_length = 100,blank=True)
-    option_two = models.CharField(max_length = 100,blank=True)
-    option_three = models.CharField(max_length = 100,blank=True)
-    option_four = models.CharField(max_length = 100,blank=True)
+    answer = models.CharField(max_length = 500)
+    option_one = models.CharField(max_length = 500,blank=True)
+    option_two = models.CharField(max_length = 500,blank=True)
+    option_three = models.CharField(max_length = 500,blank=True)
+    option_four = models.CharField(max_length = 500,blank=True)
 
     def __str__(self):
         return self.question
