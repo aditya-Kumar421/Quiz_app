@@ -102,6 +102,6 @@ class Leaderboard(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        top_users = UserScore.objects.order_by("-score")[:10]
+        top_users = UserScore.objects.order_by("-score")#[:10]
         serializer = LeaderboardSerializer(top_users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
