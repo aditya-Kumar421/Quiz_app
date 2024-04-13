@@ -100,8 +100,14 @@ class UserScoreList(APIView):
 
 class Leaderboard(APIView):
     permission_classes = [IsAuthenticated]
-
     def get(self, request):
-        top_users = UserScore.objects.order_by("-score")#[:10]
-        serializer = LeaderboardSerializer(top_users, many=True)
+        users = UserScore.objects.all()
+        sorted_users = sorted(users, key=lambda x: (-x.score, x.timestamp))
+        serializer = LeaderboardSerializer(sorted_users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    # def get(self, request):
+    #     top_users = UserScore.objects.order_by("-score")[:10]
+    #     serializer = LeaderboardSerializer(top_users, many=True)
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
+#

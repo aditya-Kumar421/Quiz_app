@@ -2,19 +2,27 @@ from rest_framework import serializers, validators
 from .models import Mail
 from django.contrib.auth.models import User
 
+from rest_framework import serializers, validators
+from .models import Mail, OTPValidation
+
 class MailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mail
         fields = ('email',)
-        extra_kwargs = {"email":{
-                                "validators":[
-                                    validators.UniqueValidator(
-                                        Mail.objects.all(),"A user with this Email already exists."
-                                    )
-                                ]
-                            }
-                    }
-    
+        extra_kwargs = {"email": {
+            "validators": [
+                validators.UniqueValidator(
+                    Mail.objects.all(), "A user with this Email already exists."
+                )
+            ]
+        }}
+
+class OTPValidationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OTPValidation
+        fields = ('user_email', 'otp', 'created_at', 'expired_at')
+        read_only_fields = ('created_at', 'expired_at')
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

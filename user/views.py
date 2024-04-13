@@ -1,24 +1,37 @@
-
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
 
+from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.crypto import get_random_string
 from django.contrib.auth.models import User
+from django.db import IntegrityError
 
 from .serializers import MailSerializer, UserSerializer
 from .models import Mail, OTPValidation
 from knox.auth import AuthToken
+from datetime import timedelta
+
+class MyThrottle(UserRateThrottle):
+    scope = 'my_scope'
+    rate = '10/day' 
 
 class GenerateOTPView(APIView):
+    throttle_classes = [MyThrottle]
     def post(self, request):
         email = request.data.get('email')
         if not email:
             return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
         otp = get_random_string(length=6, allowed_chars='123456789')
-        OTPValidation.objects.create(user_email=email, otp=otp)
+        expired_at = timezone.now() + timedelta(seconds=45)
+        try:
+            OTPValidation.objects.create(user_email=email, otp=otp, expired_at=expired_at)
+        except IntegrityError:
+            return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
         subject = 'OTP for registration'
         message = f'Your OTP is: {otp}'
@@ -32,6 +45,7 @@ class GenerateOTPView(APIView):
             return Response({'error': f'Failed to send OTP: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ValidateEmailView(APIView):
+    throttle_classes = [MyThrottle]
     def post(self, request):
         email = request.data.get('email')
         otp = request.data.get('otp')
@@ -39,10 +53,14 @@ class ValidateEmailView(APIView):
             return Response({'error': 'Email and OTP are required'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            otp_obj = OTPValidation.objects.get(user_email = email, otp=otp)
+            otp_obj = OTPValidation.objects.get(user_email=email, otp=otp)
         except OTPValidation.DoesNotExist:
             return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
-        # print(otp_obj)
+
+        if otp_obj.is_expired():
+            otp_obj.delete()
+            return Response({'error': 'OTP expired'}, status=status.HTTP_400_BAD_REQUEST)
+
         otp_obj.delete()
 
         user_data = {'email': email}
@@ -51,7 +69,7 @@ class ValidateEmailView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
-        user_detail = Mail.objects.get(email = email) 
+        user_detail = Mail.objects.get(email=email) 
         user_detail.delete()
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     

@@ -22,3 +22,6 @@ class UserScore(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s score is : {self.score}"
+
+class Time(models.Model):
+    start: models.TimeField
