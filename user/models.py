@@ -12,15 +12,11 @@ def validate_akgec_email(value):
                 params={'value': value},
             )
 
-class Mail(models.Model):
-    email = models.EmailField(unique=True, blank=False)
-
-    def __str__(self):
-        return self.email
 
 class OTPValidation(models.Model):
-    user_email = models.EmailField(unique=True)
-    otp = models.CharField(max_length=6)
+    user_name = models.CharField(max_length = 50)#, blank = False
+    user_email = models.EmailField(unique=True, blank = False)
+    otp = models.CharField(max_length=6, unique = True)
     created_at = models.DateTimeField(auto_now_add=True)
     expired_at = models.DateTimeField()
 

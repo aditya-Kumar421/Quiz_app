@@ -4,15 +4,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.authtoken.models import Token
 
-from django.shortcuts import render
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
-
 from .serializers import *
 from .models import *
 
 class QuestionGETView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request, id):
         try:
             raw_questions = Question.objects.order_by("?").filter(pk=id)[:10]
@@ -22,7 +18,7 @@ class QuestionGETView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class QuestionUpdateDeleteView(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
 
     def put(self, request, pk):
         try:
@@ -44,7 +40,7 @@ class QuestionUpdateDeleteView(APIView):
         return Response({"Question deleted successfully!"})
 
 class QuestionPOSTView(APIView):
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
 
     def post(self, request):
         serializer = QuestionSerializer(data=request.data)

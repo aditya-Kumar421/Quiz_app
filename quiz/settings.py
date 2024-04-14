@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'knox',
     'question',
     'user',
+    # 'admin_honeypot',
 ]
 #For frontend we use allowed origins
 CORS_ALLOW_ALL_ORIGINS = True
@@ -106,6 +107,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #security setting
 CSRF_COOKIE_SAMESITE = 'strict'
 SESSION_COOKIE_SAMESITE = 'strict'
+
+CSRF_COOKIE_SECURE = True
 
 #For production set below both lines to True
 CSRF_COOKIE_HTTPONLY= True

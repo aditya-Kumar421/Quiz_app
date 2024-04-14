@@ -10,8 +10,8 @@ from django.utils.crypto import get_random_string
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 
-from .serializers import MailSerializer, UserSerializer
-from .models import Mail, OTPValidation
+from .serializers import UserSerializer
+from .models import OTPValidation
 from knox.auth import AuthToken
 from datetime import timedelta
 
@@ -23,17 +23,19 @@ class GenerateOTPView(APIView):
     throttle_classes = [MyThrottle]
     def post(self, request):
         email = request.data.get('email')
-        if not email:
-            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+        user_name = request.data.get('username')
+        if not email or not user_name:
+            return Response({'error': 'Email and username are required'}, status=status.HTTP_400_BAD_REQUEST)
+
         otp = get_random_string(length=6, allowed_chars='123456789')
-        expired_at = timezone.now() + timedelta(seconds=45)
+        expired_at = timezone.now() + timedelta(seconds=90)
+
         try:
-            OTPValidation.objects.create(user_email=email, otp=otp, expired_at=expired_at)
+            OTPValidation.objects.create(user_name = user_name, user_email=email, otp=otp, expired_at=expired_at)
         except IntegrityError:
             return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
-        subject = 'OTP for registration'
+        subject = 'OTP for quiz registration'
         message = f'Your OTP is: {otp}'
         from_email = settings.EMAIL_HOST_USER
         recipient_list = [email]
@@ -44,51 +46,40 @@ class GenerateOTPView(APIView):
         except Exception as e:
             return Response({'error': f'Failed to send OTP: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 class ValidateEmailView(APIView):
     throttle_classes = [MyThrottle]
     def post(self, request):
-        email = request.data.get('email')
         otp = request.data.get('otp')
-        if not email or not otp:
-            return Response({'error': 'Email and OTP are required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not otp:
+            return Response({'error': 'OTP is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            otp_obj = OTPValidation.objects.get(user_email=email, otp=otp)
+            otp_obj = OTPValidation.objects.get(otp=otp)
         except OTPValidation.DoesNotExist:
             return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
 
         if otp_obj.is_expired():
             otp_obj.delete()
             return Response({'error': 'OTP expired'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        email = otp_obj.user_email
+        user_name = otp_obj.user_name
 
         otp_obj.delete()
 
-        user_data = {'email': email}
-        serializer = MailSerializer(data=user_data)
+        user_data = {'username':user_name, 'email': email}
+        serializer = UserSerializer(data=user_data)
+
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        user_detail = Mail.objects.get(email=email) 
-        user_detail.delete()
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-class RegisterUserView(APIView):
-    def post(self, request):
-            serializer = UserSerializer(data=request.data)
-            try:
-                email = Mail.objects.get(email =  request.data.get('email'))
-            except Mail.DoesNotExist:
-                return Response({'error': 'Email is not verified'}, status=status.HTTP_400_BAD_REQUEST)
-            # print(email)
-            if email:
-                if serializer.is_valid():
-                    user = serializer.save()
-                    _, token = AuthToken.objects.create(user)
-                    return Response({'user_info':{
+            user = serializer.save()
+            _, token = AuthToken.objects.create(user)
+            return Response({'user_info':{
                                         'username':user.username, 
-                                        'email':user.email
-                                        },
-                            'token': token})
-                return Response({'error':'check your credentials.'}, status=400)
-            return Response({'error':'enter email.'}, status=400)
+                                        'email':user.email},
+                                        'token': token})
+        
+        user_detail = User.objects.get(username = user_name, email=email) 
+        user_detail.delete()
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
