@@ -33,10 +33,38 @@ class GenerateOTPView(APIView):
         try:
             OTPValidation.objects.create(user_name = user_name, user_email=email, otp=otp, expired_at=expired_at)
         except IntegrityError:
-            return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
         subject = 'OTP for quiz registration'
         message = f'Your OTP is: {otp}'
+        from_email = settings.EMAIL_HOST_USER
+        recipient_list = [email]
+
+        try:
+            send_mail(subject, message, from_email, recipient_list)
+            return Response({'message': 'OTP sent successfully'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': f'Failed to send OTP: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ResendOTP(APIView):
+    throttle_classes = [MyThrottle]
+    def post(self, request):
+        email = request.data.get('email')
+        user_name = request.data.get('username')
+
+        try:
+            otp_record = OTPValidation.objects.get(user_name = user_name, user_email=email)
+        except OTPValidation.DoesNotExist:
+            return Response({"error": "OTP record not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        new_otp = get_random_string(length=6, allowed_chars='123456789')
+        otp_record.expired_at = timezone.now() + timedelta(seconds=90)
+        otp_record.otp = new_otp
+        otp_record.save()
+
+        subject = 'OTP for registration'
+        message = f'Your OTP is: {new_otp}'
         from_email = settings.EMAIL_HOST_USER
         recipient_list = [email]
 

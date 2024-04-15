@@ -2,7 +2,6 @@ from django.db import models
 from django.db import models
 from django.contrib.auth.models import User
 
-        
 class Question(models.Model):
     question = models.CharField(max_length = 500, unique = True)
     image_url = models.URLField(blank=True)
@@ -22,3 +21,5 @@ class UserScore(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s score is : {self.score}"
+
+    

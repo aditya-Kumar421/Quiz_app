@@ -21,9 +21,7 @@ INSTALLED_APPS = [
     'knox',
     'question',
     'user',
-    # 'admin_honeypot',
 ]
-#For frontend we use allowed origins
 CORS_ALLOW_ALL_ORIGINS = True
 
 MIDDLEWARE = [
@@ -64,10 +62,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-
-# Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
