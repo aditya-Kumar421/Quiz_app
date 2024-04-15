@@ -8,7 +8,7 @@ from .serializers import *
 from .models import *
 
 class QuestionGETView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request, id):
         try:
             raw_questions = Question.objects.order_by("?").filter(pk=id)[:10]
@@ -57,7 +57,7 @@ class QuestionPOSTView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserScoreList(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def post(self, request):
         try:
             user_score = request.data.get("score")
@@ -95,10 +95,10 @@ class UserScoreList(APIView):
             )
 
 class Leaderboard(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         users = UserScore.objects.all()
-        sorted_users = sorted(users, key=lambda x: (-x.score, x.timestamp))
+        sorted_users = sorted(users, key=lambda x: (-x.score))# ,x.timestamp
         serializer = LeaderboardSerializer(sorted_users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
