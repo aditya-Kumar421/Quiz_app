@@ -14,8 +14,8 @@ def validate_akgec_email(value):
 
 
 class OTPValidation(models.Model):
-    user_name = models.CharField(max_length = 50)#, blank = False
-    user_email = models.EmailField(unique=True, blank = False)
+    user_name = models.CharField(max_length = 30, blank = False)#
+    user_email = models.EmailField(unique=True,validators=[validate_akgec_email], blank = False)
     otp = models.CharField(max_length=6, unique = True)
     created_at = models.DateTimeField(auto_now_add=True)
     expired_at = models.DateTimeField()

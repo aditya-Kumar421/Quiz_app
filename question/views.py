@@ -57,7 +57,7 @@ class QuestionPOSTView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserScoreList(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         try:
             user_score = request.data.get("score")
