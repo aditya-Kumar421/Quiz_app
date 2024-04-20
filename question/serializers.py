@@ -7,19 +7,35 @@ class QuestionSerializer(serializers.ModelSerializer):
     options = serializers.SerializerMethodField()
     class Meta:
         model = Question
-        fields = ('id','question','image_url', 'answer', 'options')
+        fields = ('id','question','answer', 'options')
     def get_options(self, obj):
         return [obj.option_one, obj.option_two, obj.option_three, obj.option_four]
 
 
 class UserScoreSerializer(serializers.ModelSerializer):
+    time_taken = serializers.SerializerMethodField()
     class Meta:
         model = UserScore
-        fields = ('user', 'score')
+        fields = ('user', 'score', 'time_taken')
+
+    def get_time_taken(self, obj):
+        # Convert time_taken in seconds to minutes:seconds format
+        total_seconds = obj.time_taken
+        minutes = int(total_seconds // 60)
+        seconds = int(total_seconds % 60)
+        return f"{minutes:02d}:{seconds:02d}"
+    
 
 class LeaderboardSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
-
+    time_taken = serializers.SerializerMethodField()
     class Meta:
         model = UserScore
-        fields = ['username', 'score']
+        fields = ['username', 'score', 'time_taken']
+
+    def get_time_taken(self, obj):
+        # Convert time_taken in seconds to minutes:seconds format
+        total_seconds = obj.time_taken
+        minutes = int(total_seconds // 60)
+        seconds = int(total_seconds % 60)
+        return f"{minutes:02d}:{seconds:02d}"

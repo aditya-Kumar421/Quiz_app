@@ -3,6 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import APIException
+from rest_framework.exceptions import ValidationError
 
 from .serializers import *
 from .models import *
@@ -60,50 +62,45 @@ class UserScoreList(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         try:
-            user_score = request.data.get("score")
-            if user_score not in [0, 5]:
-                return Response(
-                    {"error": "Invalid score. Score must be either 0 or 5."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            score = request.data.get("score")
+            time_taken = request.data.get("time_taken")
 
-            user_score_instance, created = UserScore.objects.get_or_create(
-                user=request.user
-            )
+            if score is None or time_taken is None:
+                raise ValidationError("Score and time_taken are required.")
+            
+            if not isinstance(score, int) or not isinstance(time_taken, int):
+                raise ValidationError("Score and time_taken must be integers.")
+            
+            if score < 0 or time_taken < 0:
+                raise ValidationError("Score and time_taken must be non-negative.")
 
-            user_score_instance.score += user_score
-            user_score_instance.save()
+            user_score, created = UserScore.objects.get_or_create(user=request.user)
+
+            user_score.score = score
+            user_score.time_taken = time_taken
+            user_score.save()
 
             return Response(
-                {"score": user_score_instance.score}, status=status.HTTP_200_OK
+                {"msg": "answers successfully submitted"},
+                status=status.HTTP_200_OK
             )
 
-        except Question.DoesNotExist:
-            return Response(
-                {"error": "Question not found"}, status=status.HTTP_404_NOT_FOUND
-            )
+        except ValidationError as ve:
+            return Response({"error": str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        
     def get(self, request):
         try:
-            user_scores = UserScore.objects.filter(user=request.user)
-            total_score = sum(score.score for score in user_scores)
-            
-            return Response({"username": request.user.username, "email": request.user.email,"total_score": total_score}, status=status.HTTP_200_OK)
-
-        except UserScore.DoesNotExist:
-            return Response(
-                {"error": "No scores found for the user"}, status=status.HTTP_404_NOT_FOUND
-            )
-
+            user_score = UserScore.objects.filter(user=request.user)
+            serializer = UserScoreSerializer(user_score)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            raise APIException(str(e))
+        
 class Leaderboard(APIView):
     # permission_classes = [IsAuthenticated]
     def get(self, request):
         users = UserScore.objects.all()
-        sorted_users = sorted(users, key=lambda x: (-x.score))# ,x.timestamp
+        sorted_users = sorted(users, key=lambda x: (-x.score, x.time_taken))
         serializer = LeaderboardSerializer(sorted_users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    # def get(self, request):
-    #     top_users = UserScore.objects.order_by("-score")[:10]
-    #     serializer = LeaderboardSerializer(top_users, many=True)
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
-#
