@@ -6,5 +6,6 @@ urlpatterns = [
     path('change/<int:pk>/', QuestionUpdateDeleteView.as_view()),
     path('questions/', QuestionPOSTView.as_view()),
     path('score/', UserScoreList.as_view(), name='user-scores'),
+    path('get_score/', ViewScore.as_view(), name='user-score-get'),
     path('leaderboard/', Leaderboard.as_view(), name='leaderboard'),
 ]

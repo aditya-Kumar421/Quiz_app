@@ -2,7 +2,9 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
+from rest_framework_simplejwt.tokens import RefreshToken
 
+from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
@@ -14,20 +16,14 @@ from django.utils.translation import gettext as _
 
 from .serializers import UserSerializer
 from .models import OTPValidation
-from knox.auth import AuthToken
+
+# from knox.auth import AuthToken
 from datetime import timedelta
 
 
 class MyThrottle(UserRateThrottle):
     scope = 'my_scope'
     rate = '10/day' 
-
-def validate_akgec_email(value):
-    if not value.endswith('@akgec.ac.in'):
-        raise ValidationError(
-            _('Only college email id is allowed.'),
-            params={'value': value},
-        )
 
 class GenerateOTPView(APIView):
     throttle_classes = [MyThrottle]
@@ -37,14 +33,6 @@ class GenerateOTPView(APIView):
 
         if not email or not user_name:
             return Response({'error': 'Email and username are required'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # try:
-        #     validate_akgec_email(email)
-        # except ValidationError as e:
-        #     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        if email == User.objects.filter(email = email):
-            return Response({'error': 'Email already registered'}, status=status.HTTP_400_BAD_REQUEST)
 
         otp = get_random_string(length=6, allowed_chars='123456789')
         expired_at = timezone.now() + timedelta(seconds=90)
@@ -72,11 +60,6 @@ class ResendOTP(APIView):
         email = request.data.get('email')
         user_name = request.data.get('username')
 
-        # try:
-        #     validate_akgec_email(email)
-        # except ValidationError as e:
-        #     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
         try:
             otp_record = OTPValidation.objects.get(user_name = user_name, user_email=email)
         except OTPValidation.DoesNotExist:
@@ -125,15 +108,29 @@ class ValidateEmailView(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
-            _, token = AuthToken.objects.create(user)
-            return Response({'user_info':{
-                                        'username':user.username, 
-                                        'email':user.email},
-                                        'token': token})
+            refresh = RefreshToken.for_user(user)
+            token = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+            return Response({
+                'user_info': {
+                    'username': user.username, 
+                    'email': user.email
+                },
+                'token': token
+            })
+        
         try:
-            user_detail = User.objects.get(username = user_name, email=email) 
+            user_detail = User.objects.get(username=user_name, email=email) 
         except User.DoesNotExist:
             return Response({"error": "OTP record not found"}, status=status.HTTP_404_NOT_FOUND)
+        
         user_detail.delete()
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LogoutView(APIView):
+    def post(self, request):
+        logout(request)
+        return Response({"detail": "Logged out successfully"})

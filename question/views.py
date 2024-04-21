@@ -87,7 +87,9 @@ class UserScoreList(APIView):
 
         except ValidationError as ve:
             return Response({"error": str(ve)}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+class ViewScore(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         try:
             user_score = UserScore.objects.filter(user=request.user)
