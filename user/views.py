@@ -34,6 +34,10 @@ class GenerateOTPView(APIView):
         if not email or not user_name:
             return Response({'error': 'Email and username are required'}, status=status.HTTP_400_BAD_REQUEST)
 
+        if User.objects.filter(email=email).exists():
+            return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+
         otp = get_random_string(length=6, allowed_chars='123456789')
         expired_at = timezone.now() + timedelta(seconds=90)
 
