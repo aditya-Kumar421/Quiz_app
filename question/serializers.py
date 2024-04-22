@@ -13,11 +13,12 @@ class QuestionSerializer(serializers.ModelSerializer):
 
 
 class UserScoreSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source='user.username', read_only=True)
+    username = serializers.CharField(source='user.first_name', read_only=True)
+    student_no = serializers.CharField(source='user.username', read_only=True)
     # time_taken = serializers.SerializerMethodField()
     class Meta:
         model = UserScore
-        fields = ('username', 'score', 'time_taken')
+        fields = ('username','student_no', 'score', 'time_taken')
 
     # def get_time_taken(self, obj):
     #     total_seconds = obj.time_taken
@@ -27,11 +28,12 @@ class UserScoreSerializer(serializers.ModelSerializer):
     
 
 class LeaderboardSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source='user.username', read_only=True)
+    username = serializers.CharField(source='user.first_name', read_only=True)
+    student_no = serializers.CharField(source='user.username', read_only=True)
     time_taken = serializers.SerializerMethodField()
     class Meta:
         model = UserScore
-        fields = ['username', 'score', 'time_taken']
+        fields = ['username','student_no', 'score', 'time_taken']
 
     def get_time_taken(self, obj):
         total_seconds = obj.time_taken

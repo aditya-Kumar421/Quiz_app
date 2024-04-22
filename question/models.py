@@ -19,6 +19,6 @@ class UserScore(models.Model):
     score = models.IntegerField(default=0)
     time_taken = models.IntegerField(default = 2700, blank = False)
     def __str__(self):
-        return f"{self.user.username}'s score is : {self.score} in {self.time_taken}"
+        return f"{self.user.first_name}'s score is : {self.score} in {self.time_taken}"
 
     

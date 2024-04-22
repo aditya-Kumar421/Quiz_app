@@ -26,23 +26,23 @@ class MyThrottle(UserRateThrottle):
     rate = '10/day' 
 
 class GenerateOTPView(APIView):
-    throttle_classes = [MyThrottle]
+    # throttle_classes = [MyThrottle]
     def post(self, request):
         email = request.data.get('email')
         user_name = request.data.get('username')
+        student_no = request.data.get('student_no')
+        if not email or not user_name or not student_no:
+            return Response({'error': 'Name, student number and email are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not email or not user_name:
-            return Response({'error': 'Email and username are required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if User.objects.filter(email=email).exists():
-            return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(email=email).exists() or User.objects.filter(username=str(student_no)).exists():
+            return Response({'error': 'Email or student number already registered.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
         otp = get_random_string(length=6, allowed_chars='123456789')
         expired_at = timezone.now() + timedelta(seconds=90)
 
         try:
-            OTPValidation.objects.create(user_name = user_name, user_email=email, otp=otp, expired_at=expired_at)
+            OTPValidation.objects.create(user_name = user_name, user_email=email, student_no = student_no, otp=otp, expired_at=expired_at)
         except IntegrityError:
                 return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -63,9 +63,10 @@ class ResendOTP(APIView):
     def post(self, request):
         email = request.data.get('email')
         user_name = request.data.get('username')
+        student_no = request.data.get('student_no')
 
         try:
-            otp_record = OTPValidation.objects.get(user_name = user_name, user_email=email)
+            otp_record = OTPValidation.objects.get(user_name = user_name, user_email=email, student_no = student_no)
         except OTPValidation.DoesNotExist:
             return Response({"error": "OTP record not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -87,7 +88,7 @@ class ResendOTP(APIView):
 
 
 class ValidateEmailView(APIView):
-    throttle_classes = [MyThrottle]
+    # throttle_classes = [MyThrottle]
     def post(self, request):
         otp = request.data.get('otp')
         if not otp:
@@ -103,11 +104,13 @@ class ValidateEmailView(APIView):
             return Response({'error': 'OTP expired'}, status=status.HTTP_400_BAD_REQUEST)
         
         email = otp_obj.user_email
-        user_name = otp_obj.user_name
+        first_name = otp_obj.user_name
+        student_no = otp_obj.student_no
 
         otp_obj.delete()
+        username = str(student_no)
 
-        user_data = {'username':user_name, 'email': email}
+        user_data = {'username':username, 'email': email, 'first_name': first_name}
         serializer = UserSerializer(data=user_data)
 
         if serializer.is_valid():
@@ -119,16 +122,17 @@ class ValidateEmailView(APIView):
             }
             return Response({
                 'user_info': {
-                    'username': user.username, 
-                    'email': user.email
+                    'username': user.first_name, 
+                    'email': user.email,
+                    'student_no': user.username,
                 },
                 'token': token
             })
         
         try:
-            user_detail = User.objects.get(username=user_name, email=email) 
+            user_detail = User.objects.get(username=username, email=email) 
         except User.DoesNotExist:
-            return Response({"error": "OTP record not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "OTP record not saved. please request again"}, status=status.HTTP_404_NOT_FOUND)
         
         user_detail.delete()
 
