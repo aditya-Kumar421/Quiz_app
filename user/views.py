@@ -38,6 +38,7 @@ class GenerateOTPView(APIView):
             return Response({'error': 'Email or student number already registered. '}, status=status.HTTP_400_BAD_REQUEST)
 
         captcha_token = request.data.get('captcha', '')
+        print(captcha_token)
         data = {
             'secret': settings.RECAPTCHA_PRIVATE_KEY,
             'response': captcha_token
