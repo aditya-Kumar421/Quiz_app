@@ -63,8 +63,8 @@ class UserScoreList(APIView):
     def post(self, request):
         try:
             score = request.data.get("score")
-            time_taken = request.data.get("time_taken")
-
+            time_left = request.data.get("time_taken")
+            time_taken = 2700 - time_left
             if score is None or time_taken is None:
                 raise ValidationError("Score and time_taken are required.")
             

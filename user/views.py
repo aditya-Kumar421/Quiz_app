@@ -13,11 +13,11 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
+import requests
 
 from .serializers import UserSerializer
 from .models import OTPValidation
 
-# from knox.auth import AuthToken
 from datetime import timedelta
 
 
@@ -35,28 +35,35 @@ class GenerateOTPView(APIView):
             return Response({'error': 'Name, student number and email are required'}, status=status.HTTP_400_BAD_REQUEST)
 
         if User.objects.filter(email=email).exists() or User.objects.filter(username=str(student_no)).exists():
-            return Response({'error': 'Email or student number already registered.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Email or student number already registered. '}, status=status.HTTP_400_BAD_REQUEST)
 
+        captcha_token = request.data.get('captcha', '')
+        data = {
+            'secret': settings.RECAPTCHA_PRIVATE_KEY,
+            'response': captcha_token
+        }
+        response = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
+        result = response.json()
+        if result['success']:
+            otp = get_random_string(length=6, allowed_chars='123456789')
+            expired_at = timezone.now() + timedelta(seconds=90)
 
-        otp = get_random_string(length=6, allowed_chars='123456789')
-        expired_at = timezone.now() + timedelta(seconds=90)
-
-        try:
-            OTPValidation.objects.create(user_name = user_name, user_email=email, student_no = student_no, otp=otp, expired_at=expired_at)
-        except IntegrityError:
+            try:
+                OTPValidation.objects.create(user_name = user_name, user_email=email, student_no = student_no, otp=otp, expired_at=expired_at)
+            except IntegrityError:
                 return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
-        subject = 'OTP for quiz registration'
-        message = f'Your OTP is: {otp}'
-        from_email = settings.EMAIL_HOST_USER
-        recipient_list = [email]
+            subject = 'OTP for quiz registration'
+            message = f'Your OTP is: {otp}'
+            from_email = settings.EMAIL_HOST_USER
+            recipient_list = [email]
 
-        try:
-            send_mail(subject, message, from_email, recipient_list)
+            try:
+                send_mail(subject, message, from_email, recipient_list)
+            except Exception as e:
+                return Response({'error': f'Failed to send OTP: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             return Response({'message': 'OTP sent successfully'}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'error': f'Failed to send OTP: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        return Response({'errors': "reCAPTCHA verification failed"}, status=400)
 
 class ResendOTP(APIView):
     throttle_classes = [MyThrottle]
