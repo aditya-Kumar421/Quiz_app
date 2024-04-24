@@ -22,7 +22,6 @@ INSTALLED_APPS = [
     'captcha',
     'question',
     'user',
-    # 'knox',
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -84,9 +83,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
-    # 'DEFAULT_RENDERER_CLASSES': [
-    #     'rest_framework.renderers.JSONRenderer',
-    # ],
 }
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=55),
@@ -105,11 +101,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CSRF_COOKIE_SAMESITE = 'strict'
 SESSION_COOKIE_SAMESITE = 'strict'
 
-CSRF_COOKIE_SECURE = True
 
 #For production set below both lines to True
 CSRF_COOKIE_HTTPONLY= True
 SESSION_COOKIE_HTTPONLY= True
+CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
 

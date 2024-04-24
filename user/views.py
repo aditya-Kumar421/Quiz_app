@@ -23,10 +23,10 @@ from datetime import timedelta
 
 class MyThrottle(UserRateThrottle):
     scope = 'my_scope'
-    rate = '10/day' 
+    rate = '5/day' 
 
 class GenerateOTPView(APIView):
-    # throttle_classes = [MyThrottle]
+    throttle_classes = [MyThrottle]
     def post(self, request):
         email = request.data.get('email')
         user_name = request.data.get('username')
@@ -37,17 +37,13 @@ class GenerateOTPView(APIView):
         if User.objects.filter(email=email).exists() or User.objects.filter(username=str(student_no)).exists():
             return Response({'error': 'Email or student number already registered. '}, status=status.HTTP_400_BAD_REQUEST)
 
-        captcha_token = request.data.get('recaptchaToken', '').strip()
-
-        print(captcha_token)
+        captcha_token = request.data.get('recaptchaToken', '')
         data = {
             'secret': settings.RECAPTCHA_PRIVATE_KEY,
             'response': captcha_token
         }
-        print(data)
         response = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
         result = response.json()
-        print(result)
         if result['success']:
             otp = get_random_string(length=6, allowed_chars='123456789')
             expired_at = timezone.now() + timedelta(seconds=90)
@@ -55,7 +51,7 @@ class GenerateOTPView(APIView):
             try:
                 OTPValidation.objects.create(user_name = user_name, user_email=email, student_no = student_no, otp=otp, expired_at=expired_at)
             except IntegrityError:
-                return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Please check your credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
             subject = 'OTP for quiz registration'
             message = f'Your One-Time Password (OTP) for verification is: {otp}.'
@@ -99,7 +95,7 @@ class ResendOTP(APIView):
 
 
 class ValidateEmailView(APIView):
-    # throttle_classes = [MyThrottle]
+    throttle_classes = [MyThrottle]
     def post(self, request):
         otp = request.data.get('otp')
         if not otp:
