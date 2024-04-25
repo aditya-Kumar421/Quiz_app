@@ -46,7 +46,7 @@ class GenerateOTPView(APIView):
         result = response.json()
         if result['success']:
             otp = get_random_string(length=6, allowed_chars='123456789')
-            expired_at = timezone.now() + timedelta(seconds=90)
+            expired_at = timezone.now() + timedelta(seconds=60)
 
             try:
                 OTPValidation.objects.create(user_name = user_name, user_email=email, student_no = student_no, otp=otp, expired_at=expired_at)
