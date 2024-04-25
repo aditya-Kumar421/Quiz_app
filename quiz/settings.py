@@ -98,8 +98,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #security setting
-# CSRF_COOKIE_SAMESITE = 'strict'
-# SESSION_COOKIE_SAMESITE = 'strict'
+CSRF_COOKIE_SAMESITE = 'strict'
+SESSION_COOKIE_SAMESITE = 'strict'
 
 #For production set below both lines to True
 CSRF_COOKIE_HTTPONLY= True
