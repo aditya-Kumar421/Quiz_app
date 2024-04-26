@@ -75,7 +75,7 @@ class ResendOTP(APIView):
         try:
             otp_record = OTPValidation.objects.get(user_name = user_name, user_email=email, student_no = student_no)
         except OTPValidation.DoesNotExist:
-            return Response({"error": "OTP record not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "User details are not found"}, status=status.HTTP_404_NOT_FOUND)
 
         new_otp = get_random_string(length=6, allowed_chars='123456789')
         otp_record.expired_at = timezone.now() + timedelta(seconds=90)
@@ -99,7 +99,7 @@ class ValidateEmailView(APIView):
     def post(self, request):
         otp = request.data.get('otp')
         if not otp:
-            return Response({'error': 'OTP is required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'OTP required'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             otp_obj = OTPValidation.objects.get(otp=otp)

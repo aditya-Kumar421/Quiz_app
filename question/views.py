@@ -81,7 +81,7 @@ class UserScoreList(APIView):
             user_score.save()
 
             return Response(
-                {"msg": "answers successfully submitted"},
+                {"msg": "Answers submitted successfully!"},
                 status=status.HTTP_200_OK
             )
 
