@@ -77,6 +77,7 @@ Please contribute using GitHub Flow. Create a branch add commits and open a pull
 
 Technologies used in the project:
 
+*   ReactJS
 *   Django Rest Framework
 *   SQLite
 *   JWT
