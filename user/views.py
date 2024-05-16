@@ -61,7 +61,7 @@ class GenerateOTPView(APIView):
         return Response({'errors': "reCAPTCHA verification failed"}, status=400)
 
 class ResendOTP(APIView):
-    throttle_classes = [MyThrottle]
+    throttle_classes = [AnonRateThrottle, UserRateThrottle]
     def post(self, request):
         email = request.data.get('email')
         user_name = request.data.get('username')
@@ -90,7 +90,7 @@ class ResendOTP(APIView):
 
 
 class ValidateEmailView(APIView):
-    throttle_classes = [MyThrottle]
+    throttle_classes = [AnonRateThrottle, UserRateThrottle]
     def post(self, request):
         otp = request.data.get('otp')
         if not otp:
