@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.throttling import UserRateThrottle
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.contrib.auth import authenticate, login, logout
@@ -20,13 +20,8 @@ from .models import OTPValidation
 
 from datetime import timedelta
 
-
-class MyThrottle(UserRateThrottle):
-    scope = 'my_scope'
-    rate = '5/day' 
-
 class GenerateOTPView(APIView):
-    throttle_classes = [MyThrottle]
+    throttle_classes = [AnonRateThrottle, UserRateThrottle]
     def post(self, request):
         email = request.data.get('email')
         user_name = request.data.get('username')
