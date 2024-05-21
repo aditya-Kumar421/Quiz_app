@@ -10,7 +10,6 @@ from .serializers import *
 from .models import *
 
 class QuestionGETView(APIView):
-    # permission_classes = [IsAuthenticated]
     def get(self, request, id):
         try:
             raw_questions = Question.objects.order_by("?").filter(pk=id)[:10]
@@ -21,7 +20,6 @@ class QuestionGETView(APIView):
 
 class QuestionUpdateDeleteView(APIView):
     permission_classes = [IsAdminUser]
-
     def put(self, request, pk):
         try:
             qus = Question.objects.get(pk=pk)
@@ -32,7 +30,6 @@ class QuestionUpdateDeleteView(APIView):
             serializer.save()
             return Response({"msg: Question Updated successfully!"})
         return Response(serializer.errors)
-
     def delete(self, request, pk):
         try:
             qus = Question.objects.get(pk=pk)
@@ -43,7 +40,6 @@ class QuestionUpdateDeleteView(APIView):
 
 class QuestionPOSTView(APIView):
     permission_classes = [IsAdminUser]
-
     def post(self, request):
         serializer = QuestionSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -52,7 +48,6 @@ class QuestionPOSTView(APIView):
                 {"msg: Question added successfully!"}, status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors)
-
     def get(self, request):
         all_Questions = Question.objects.all()
         serializer = QuestionSerializer(all_Questions, many=True)
@@ -99,8 +94,6 @@ class ViewScore(APIView):
             raise APIException(str(e))
         
 class Leaderboard(APIView):
-    # permission_classes = [IsAuthenticated]
-
     def get(self, request):
         users = UserScore.objects.all()
         sorted_users = sorted(users, key=lambda x: (-x.score, x.time_taken))
