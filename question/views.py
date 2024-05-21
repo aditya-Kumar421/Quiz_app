@@ -5,7 +5,6 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import APIException
 from rest_framework.exceptions import ValidationError
-from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
 from .serializers import *
 from .models import *
@@ -101,7 +100,7 @@ class ViewScore(APIView):
         
 class Leaderboard(APIView):
     # permission_classes = [IsAuthenticated]
-    throttle_classes = [AnonRateThrottle, UserRateThrottle]
+
     def get(self, request):
         users = UserScore.objects.all()
         sorted_users = sorted(users, key=lambda x: (-x.score, x.time_taken))
