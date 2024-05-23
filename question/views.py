@@ -39,7 +39,7 @@ class QuestionUpdateDeleteView(APIView):
         return Response({"Question deleted successfully!"})
 
 class QuestionPOSTView(APIView):
-    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]
     def post(self, request):
         serializer = QuestionSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
