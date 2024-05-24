@@ -1,7 +1,6 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.contrib.auth import authenticate, login, logout
@@ -21,7 +20,6 @@ from .models import OTPValidation
 from datetime import timedelta
 
 class GenerateOTPView(APIView):
-    throttle_classes = [AnonRateThrottle, UserRateThrottle]
     def post(self, request):
         email = request.data.get('email')
         user_name = request.data.get('username')
@@ -61,7 +59,6 @@ class GenerateOTPView(APIView):
         return Response({'errors': "reCAPTCHA verification failed"}, status=400)
 
 class ResendOTP(APIView):
-    throttle_classes = [AnonRateThrottle, UserRateThrottle]
     def post(self, request):
         email = request.data.get('email')
         user_name = request.data.get('username')
@@ -90,7 +87,6 @@ class ResendOTP(APIView):
 
 
 class ValidateEmailView(APIView):
-    throttle_classes = [AnonRateThrottle, UserRateThrottle]
     def post(self, request):
         otp = request.data.get('otp')
         if not otp:
