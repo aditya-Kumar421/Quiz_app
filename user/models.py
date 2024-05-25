@@ -8,8 +8,8 @@ from datetime import timedelta
 
 class OTPValidation(models.Model):
     user_name = models.CharField(max_length = 30, blank = False, unique=False)
-    user_email = models.EmailField(unique=False, blank = False)
-    student_no = models.IntegerField(unique = False, blank = False)
+    user_email = models.EmailField(unique=True, blank = False)
+    student_no = models.IntegerField(unique = True, blank = False)
     otp = models.CharField(max_length=6, unique = True)
     created_at = models.DateTimeField(auto_now_add=True)
     expired_at = models.DateTimeField()
