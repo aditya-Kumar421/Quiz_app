@@ -27,8 +27,15 @@ class GenerateOTPView(APIView):
         if not email or not user_name or not student_no:
             return Response({'error': 'Name, student number and email are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if User.objects.filter(email=email).exists() or User.objects.filter(username=str(student_no)).exists():
-            return Response({'error': 'Email or student number already registered. '}, status=status.HTTP_400_BAD_REQUEST)
+        # if User.objects.filter(email=email).exists() or User.objects.filter(username=str(student_no)).exists():
+        #     return Response({'error': 'Email or student number already registered. '}, status=status.HTTP_400_BAD_REQUEST)
+
+        existing_user = User.objects.filter(email=email) | User.objects.filter(username=str(student_no))
+        if existing_user.exists():
+            existing_user.delete()
+
+# Delete existing OTPValidation record (if any)
+        OTPValidation.objects.filter(user_email=email, student_no=student_no).delete()
 
         captcha_token = request.data.get('recaptchaToken', '')
         data = {
@@ -39,7 +46,7 @@ class GenerateOTPView(APIView):
         result = response.json()
         if result['success']:
             otp = get_random_string(length=6, allowed_chars='123456789')
-            expired_at = timezone.now() + timedelta(seconds=60)
+            expired_at = timezone.now() + timedelta(minutes=2)
 
             try:
                 OTPValidation.objects.create(user_name = user_name, user_email=email, student_no = student_no, otp=otp, expired_at=expired_at)
